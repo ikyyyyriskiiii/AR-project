@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#04070f" />
+  <title>AR-ITOps — WebAR Monitoring Infrastruktur & Perangkat IT</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="vendor/aframe.min.js"></script>
+  <script src="vendor/aframe-ar.js"></script>
+  <script src="js/catalog.js"></script>
+  <script src="js/sim-core.js"></script>
+  <script src="js/hud.js"></script>
+  <script src="js/canvas-panel.js"></script>
+  <script src="js/rig.js"></script>
+</head>
+<body>
+  <a-scene
+    arjs="sourceType: webcam; debugUIEnabled: false; areaLearningButton: false; errorPopup: arjs-error; detectionMode: mono_and_matrix; matrixCodeType: 3x3; trackingMethod: best; maxDetectionRate: 60; cameraParametersUrl: assets/markers/camera_para.dat;"
+    vr-mode-ui="enabled: false"
+    loading-screen="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+    renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true">
+
+    <a-marker id="markerA" type="pattern" url="assets/markers/pattern-letterA.patt" smooth="true" smoothCount="6" smoothTolerance="0.01">
+      <a-entity id="rigA" it-rig="module: server; slot: A" scale="0.62 0.62 0.62"></a-entity>
+    </a-marker>
+
+    <a-marker id="markerB" type="pattern" url="assets/markers/pattern-letterB.patt" smooth="true" smoothCount="6" smoothTolerance="0.01">
+      <a-entity id="rigB" it-rig="module: laptop; slot: B" scale="0.62 0.62 0.62"></a-entity>
+    </a-marker>
+
+    <a-entity camera></a-entity>
+  </a-scene>
+
+  <div class="hud">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">AR</div>
+        <div>
+          <h1>AR-ITOps</h1>
+          <p>WebAR Infrastruktur &amp; Perangkat IT</p>
+        </div>
+      </div>
+      <div class="chips">
+        <span class="chip" id="chipSource"><span class="dot"></span><span id="chipSourceText">SIM</span></span>
+        <span class="chip" id="chipA"><span class="dot"></span><span id="chipAText">RAK A: -</span></span>
+        <span class="chip" id="chipB"><span class="dot"></span><span id="chipBText">RAK B: -</span></span>
+        <span class="chip" id="chipPerf"><span class="dot"></span><span id="chipPerfText">-- FPS</span></span>
+      </div>
+    </div>
+
+    <div class="bottom">
+      <div class="tools">
+        <button class="tool" id="btnPanel">Detail</button>
+        <button class="tool" id="btnAlarm">Alarm: OFF</button>
+        <a class="tool" href="preview.html">Preview 3D</a>
+        <a class="tool" href="ars.html">Tanpa Marker</a>
+        <a class="tool" href="marker.html" target="_blank">Marker</a>
+      </div>
+      <div class="filters">
+        <div class="seg" id="slotSeg">
+          <button data-slot="A" class="active">RAK A</button>
+          <button data-slot="B">RAK B</button>
+        </div>
+        <div class="rail" id="groupRail"></div>
+      </div>
+      <div class="rail" id="rail"></div>
+    </div>
+  </div>
+
+  <div class="hint" id="hint">
+    <div class="scan">&#128225;</div>
+    <h2>Arahkan kamera ke marker A atau B</h2>
+    <p>Satu marker = satu panel. Anda bisa arahkan ke <b>laptop, HP, printer, CCTV</b>, server, dan lainnya &mdash; ganti jenis perangkat lewat tombol di bawah.</p>
+    <div class="links">
+      <a href="marker.html" target="_blank">Tampilkan marker</a>
+      <a href="preview.html">Preview 3D (tanpa kamera)</a>
+    </div>
+  </div>
+
+  <aside class="panel" id="panel">
+    <div class="panel-head">
+      <h2 id="panelTitle">Server Rack</h2>
+      <button class="close" id="btnClose">&#10005;</button>
+    </div>
+    <div class="meta" id="panelMeta"></div>
+    <div class="rows" id="rows"></div>
+  </aside>
+
+  <div class="overlay" id="overlay">
+    <div class="box">
+      <h2>Kamera AR tidak dapat diakses</h2>
+      <p id="overlayWhy">Browser memblokir akses kamera pada konteks ini.</p>
+      <p>Jalankan lewat server lokal:</p>
+      <ul>
+        <li>Desktop: <code>npm start</code> lalu buka <code>http://localhost:8080</code></li>
+        <li>HP (butuh HTTPS): jalankan <code>npm run cert</code> sekali agar tanpa peringatan, lalu buka <code>https://&lt;IP-PC&gt;:8443</code></li>
+      </ul>
+      <p>Cara cepat tanpa sertifikat: <code>cloudflared tunnel --url http://localhost:8080</code>, buka URL <code>https://...</code> yang muncul.</p>
+      <p>Tanpa kamera tetap bisa demo lewat <a href="preview.html" style="color:#22d3ee">Preview 3D</a>.</p>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

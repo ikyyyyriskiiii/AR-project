@@ -1,0 +1,17 @@
+{
+  "name": "ar-itops-tugas2",
+  "version": "1.1.0",
+  "private": true,
+  "description": "WebAR multifungsi untuk monitoring infrastruktur & perangkat IT (server, jaringan, storage, IoT, database, UPS, laptop, HP, tablet, printer, CCTV, workstation) - Tugas 2 TRPL",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "cert": "node scripts/make-cert.js"
+  },
+  "keywords": ["ar", "webar", "ar.js", "aframe", "it-monitoring", "asset-inventory", "trpl"],
+  "license": "MIT",
+  "dependencies": {
+    "selfsigned": "^5.5.0"
+  }
+}

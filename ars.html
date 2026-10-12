@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#04070f" />
+  <title>AR-ITOps — Mode Tanpa Marker (WebXR)</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="vendor/aframe.min.js"></script>
+  <script src="js/catalog.js"></script>
+  <script src="js/sim-core.js"></script>
+  <script src="js/hud.js"></script>
+  <script src="js/canvas-panel.js"></script>
+  <script src="js/rig.js"></script>
+</head>
+<body>
+  <a-scene id="scene"
+    webxr="requiredFeatures: local-floor; optionalFeatures: hit-test,dom-overlay; overlayElement: #hud"
+    vr-mode-ui="enabled: false"
+    loading-screen="enabled: false"
+    renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true">
+
+    <a-entity id="rig" it-rig="module: server" position="0 0 -1.7"></a-entity>
+
+    <a-entity geometry="primitive: ring; radiusInner: 0.9; radiusOuter: 0.92"
+              rotation="-90 0 0" position="0 0.01 -1.7"
+              material="color: #22d3ee; opacity: 0.5; transparent: true; shader: flat"></a-entity>
+  </a-scene>
+
+  <div class="hud" id="hud">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">AR</div>
+        <div>
+          <h1>AR-ITOps &middot; Tanpa Marker</h1>
+          <p>Panel ditempatkan di ruang nyata lewat WebXR</p>
+        </div>
+      </div>
+      <div class="chips">
+        <span class="chip" id="chipSource"><span class="dot"></span><span id="chipSourceText">SIM</span></span>
+        <span class="chip" id="chipPerf"><span class="dot"></span><span id="chipPerfText">-- FPS</span></span>
+      </div>
+    </div>
+
+    <div class="bottom">
+      <div class="tools">
+        <button class="tool" id="btnEnterAR">Masuk AR</button>
+        <button class="tool" id="btnPanel">Detail</button>
+        <button class="tool" id="btnAlarm">Alarm: OFF</button>
+        <a class="tool" href="index.html">Mode Marker</a>
+        <a class="tool" href="preview.html">Preview 3D</a>
+      </div>
+      <div class="filters">
+        <div class="rail" id="groupRail"></div>
+      </div>
+      <div class="rail" id="rail"></div>
+    </div>
+  </div>
+
+  <aside class="panel" id="panel">
+    <div class="panel-head">
+      <h2 id="panelTitle">Server Rack</h2>
+      <button class="close" id="btnClose">&#10005;</button>
+    </div>
+    <div class="meta" id="panelMeta"></div>
+    <div class="rows" id="rows"></div>
+  </aside>
+
+  <div class="overlay show" id="overlay">
+    <div class="box">
+      <h2>Mode tanpa marker (eksperimental)</h2>
+      <p id="overlayWhy">Memeriksa dukungan WebXR pada perangkat ini&hellip;</p>
+      <p>Mode ini memakai <b>WebXR immersive-ar</b>: panel diletakkan langsung di ruang nyata tanpa perlu mencetak marker. Wajib dijalankan lewat <b>HTTPS</b> (atau localhost) dan didukung Chrome di Android yang punya ARCore.</p>
+      <p>Kalau perangkat tidak mendukung, gunakan <a href="index.html" style="color:#22d3ee">mode marker</a> atau <a href="preview.html" style="color:#22d3ee">Preview 3D</a>.</p>
+      <div class="links" style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="tool" id="btnEnterAR2">Masuk AR</button>
+        <a class="tool" href="index.html">Mode Marker</a>
+        <a class="tool" href="preview.html">Preview 3D</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/viewer.js"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      var scene = document.querySelector("a-scene");
+      var overlay = document.getElementById("overlay");
+      var why = document.getElementById("overlayWhy");
+      var buttons = [document.getElementById("btnEnterAR"), document.getElementById("btnEnterAR2")];
+
+      function setLabels(entered) {
+        buttons.forEach(function (btn) {
+          if (btn) btn.textContent = entered ? "Keluar AR" : "Masuk AR";
+        });
+      }
+
+      function fail(message) {
+        overlay.classList.add("show");
+        why.textContent = message;
+        setLabels(false);
+      }
+
+      function enter() {
+        if (scene.is("vr-mode")) {
+          scene.exitVR();
+          return;
+        }
+        overlay.classList.remove("show");
+        scene.enterAR().catch(function (err) {
+          fail("Gagal masuk mode AR: " + err.message);
+        });
+      }
+
+      buttons.forEach(function (btn) {
+        if (btn) btn.addEventListener("click", enter);
+      });
+
+      scene.addEventListener("enter-vr", function () { setLabels(true); });
+      scene.addEventListener("exit-vr", function () { setLabels(false); });
+
+      if (!navigator.xr) {
+        fail("Browser ini tidak memiliki WebXR. Gunakan mode marker atau Preview 3D.");
+        return;
+      }
+      if (!navigator.xr.isSessionSupported) {
+        overlay.classList.remove("show");
+        why.textContent = "Perangkat ini belum bisa dipastikan mendukung WebXR. Coba tekan Masuk AR.";
+        return;
+      }
+      navigator.xr.isSessionSupported("immersive-ar").then(function (supported) {
+        if (supported) {
+          overlay.classList.remove("show");
+          why.textContent = "Siap. Tekan Masuk AR untuk menempatkan panel di ruang nyata.";
+        } else {
+          fail("Perangkat/browser ini tidak mendukung immersive-ar. Gunakan mode marker atau Preview 3D.");
+        }
+      }).catch(function () {
+        fail("Gagal memeriksa dukungan immersive-ar. Gunakan mode marker atau Preview 3D.");
+      });
+    })();
+  </script>
+</body>
+</html>

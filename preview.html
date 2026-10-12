@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#04070f" />
+  <title>AR-ITOps — Preview 3D</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="vendor/aframe.min.js"></script>
+  <script src="js/catalog.js"></script>
+  <script src="js/sim-core.js"></script>
+  <script src="js/hud.js"></script>
+  <script src="js/canvas-panel.js"></script>
+  <script src="js/rig.js"></script>
+</head>
+<body>
+  <a-scene
+    vr-mode-ui="enabled: false"
+    loading-screen="enabled: false"
+    renderer="antialias: true; logarithmicDepthBuffer: true"
+    fog="type: exponential; color: #050a14; density: 0.03">
+
+    <a-plane rotation="-90 0 0" width="40" height="40" position="0 0 0"
+             material="color: #0a1424; roughness: 1; metalness: 0"></a-plane>
+    <a-entity geometry="primitive: ring; radiusInner: 1.4; radiusOuter: 1.42"
+              rotation="-90 0 0" position="0 0.01 0"
+              material="color: #1e3a5f; opacity: 0.7; transparent: true; shader: flat"></a-entity>
+    <a-entity geometry="primitive: ring; radiusInner: 2.6; radiusOuter: 2.62"
+              rotation="-90 0 0" position="0 0.01 0"
+              material="color: #16304d; opacity: 0.6; transparent: true; shader: flat"></a-entity>
+
+    <a-entity id="rig" it-rig="module: server" position="0 0 0"></a-entity>
+
+    <a-entity id="cameraRig" position="0 1.35 2.9">
+      <a-entity camera="fov: 55" look-controls="pointerLockEnabled: false" wasd-controls="acceleration: 24"></a-entity>
+    </a-entity>
+  </a-scene>
+
+  <div class="hud">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">AR</div>
+        <div>
+          <h1>AR-ITOps &middot; Preview 3D</h1>
+          <p>Mode tanpa kamera &middot; drag untuk melihat, WASD untuk bergerak</p>
+        </div>
+      </div>
+      <div class="chips">
+        <span class="chip" id="chipSource"><span class="dot"></span><span id="chipSourceText">SIM</span></span>
+        <span class="chip" id="chipPerf"><span class="dot"></span><span id="chipPerfText">-- FPS</span></span>
+      </div>
+    </div>
+
+    <div class="bottom">
+      <div class="tools">
+        <button class="tool" id="btnPanel">Detail</button>
+        <button class="tool" id="btnAlarm">Alarm: OFF</button>
+        <a class="tool" href="index.html">Mode WebAR</a>
+        <a class="tool" href="ars.html">Tanpa Marker</a>
+        <a class="tool" href="marker.html" target="_blank">Marker</a>
+      </div>
+      <div class="filters">
+        <div class="rail" id="groupRail"></div>
+      </div>
+      <div class="rail" id="rail"></div>
+    </div>
+  </div>
+
+  <aside class="panel" id="panel">
+    <div class="panel-head">
+      <h2 id="panelTitle">Server Rack</h2>
+      <button class="close" id="btnClose">&#10005;</button>
+    </div>
+    <div class="meta" id="panelMeta"></div>
+    <div class="rows" id="rows"></div>
+  </aside>
+
+  <script src="js/viewer.js"></script>
+</body>
+</html>

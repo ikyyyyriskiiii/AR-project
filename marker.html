@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AR-ITOps — Marker A &amp; B</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 26px 18px 46px;
+      background: #eef2f7;
+      color: #0f172a;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+    .wrap { max-width: 900px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 22px; }
+    header h1 { margin: 0 0 6px; font-size: 22px; }
+    header p { margin: 0; font-size: 13px; color: #475569; line-height: 1.6; }
+    .sheet {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 22px;
+      justify-content: center;
+      background: #fff;
+      border: 1px solid #d5dde8;
+      border-radius: 16px;
+      padding: 26px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    }
+    .marker { text-align: center; }
+    .marker canvas {
+      width: min(62vw, 300px);
+      height: auto;
+      display: block;
+      border: 1px solid #cbd5e1;
+      image-rendering: pixelated;
+    }
+    .marker .cap {
+      margin-top: 10px;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+    .marker .sub { font-size: 11px; color: #64748b; }
+    .notes { margin: 22px 0 0; padding-left: 20px; font-size: 13px; color: #334155; line-height: 1.85; }
+    .actions { margin-top: 22px; text-align: center; }
+    .actions button, .actions a {
+      display: inline-block;
+      margin: 4px;
+      padding: 11px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 11px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      color: #0f172a;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .actions button { background: #0f172a; color: #fff; border-color: #0f172a; }
+    .status { text-align: center; font-size: 12px; color: #b45309; min-height: 18px; margin-top: 10px; }
+    @media print {
+      body { background: #fff; padding: 0; }
+      header, .notes, .actions, .status { display: none !important; }
+      .sheet { border: 0; box-shadow: none; padding: 0; gap: 14mm; }
+      .marker canvas { width: 120mm; border: 0; }
+      .marker .cap { font-size: 12pt; }
+      .marker .sub { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Marker A &amp; B &middot; AR-ITOps</h1>
+      <p>Tampilkan halaman ini di layar lain, atau cetak dan letakkan di meja. Arahkan kamera AR ke salah satu marker.</p>
+    </header>
+
+    <div class="sheet">
+      <div class="marker">
+        <canvas id="markerA" width="768" height="768"></canvas>
+        <div class="cap">MARKER A</div>
+        <div class="sub">pattern-letterA.patt</div>
+      </div>
+      <div class="marker">
+        <canvas id="markerB" width="768" height="768"></canvas>
+        <div class="cap">MARKER B</div>
+        <div class="sub">pattern-letterB.patt</div>
+      </div>
+    </div>
+
+    <div class="status" id="status">Memuat pola marker&hellip;</div>
+
+    <ul class="notes">
+      <li>Marker digambar langsung dari file <code>.patt</code> resmi AR.js, jadi pasti cocok dengan pola yang dideteksi aplikasi.</li>
+      <li>Cetak di kertas putih tanpa dipotong bagian dalam kotak hitam.</li>
+      <li>Ukuran ideal saat dicetak sekitar 15 cm &times; 15 cm, jarak kamera 30&ndash;80 cm.</li>
+      <li>Hindari pantulan cahaya dan bayangan yang menutupi marker.</li>
+      <li>Marker A dan B bisa dipakai bersamaan untuk menampilkan dua panel berbeda.</li>
+    </ul>
+
+    <div class="actions">
+      <button onclick="window.print()">Cetak kedua marker</button>
+      <a href="index.html">Buka mode WebAR</a>
+      <a href="preview.html">Preview 3D</a>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var BORDER_RATIO = 0.25;
+      var GRID = 16;
+
+      function drawMarker(canvas, values) {
+        var size = canvas.width;
+        var ctx = canvas.getContext("2d");
+        var border = Math.round(size * BORDER_RATIO);
+        var inner = size - border * 2;
+        var cell = inner / GRID;
+
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0, 0, size, size);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(border, border, inner, inner);
+        ctx.fillStyle = "#000000";
+
+        for (var y = 0; y < GRID; y += 1) {
+          for (var x = 0; x < GRID; x += 1) {
+            var value = values[y * GRID + x];
+            if (value == null || value >= 128) continue;
+            ctx.fillRect(
+              Math.round(border + x * cell),
+              Math.round(border + y * cell),
+              Math.ceil(cell),
+              Math.ceil(cell)
+            );
+          }
+        }
+      }
+
+      function loadPattern(url, canvasId) {
+        return fetch(url, { cache: "no-store" })
+          .then(function (res) {
+            if (!res.ok) throw new Error(url + " -> HTTP " + res.status);
+            return res.text();
+          })
+          .then(function (text) {
+            var values = text.trim().split(/\s+/).slice(0, GRID * GRID).map(Number);
+            if (values.length < GRID * GRID) throw new Error(url + " tidak lengkap");
+            drawMarker(document.getElementById(canvasId), values);
+          });
+      }
+
+      var statusEl = document.getElementById("status");
+      Promise.all([
+        loadPattern("assets/markers/pattern-letterA.patt", "markerA"),
+        loadPattern("assets/markers/pattern-letterB.patt", "markerB")
+      ])
+        .then(function () {
+          statusEl.textContent = "Marker siap dicetak.";
+          statusEl.style.color = "#15803d";
+        })
+        .catch(function (err) {
+          statusEl.textContent =
+            "Gagal memuat pola (" + err.message + "). Jalankan lewat server: npm start, lalu buka http://localhost:8080/marker.html";
+          statusEl.style.color = "#b91c1c";
+        });
+    })();
+  </script>
+</body>
+</html>
